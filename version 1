@@ -1,0 +1,157 @@
+import random as rd
+
+with open(r"hangman.txt",'r') as f:
+    word_list_temp = f.readlines()
+f.close()
+word_list_temp[0]
+word_list = [r[:-1] for r in word_list_temp]
+
+
+
+word_guess_limit = 3
+letter_guess_limit = 7
+
+play='y'
+
+
+hangman_display=["""
+                  |----------------------
+                  |           |
+                  |           O
+                  |         
+                  |           
+                  |         
+                  |______________________
+                  """,
+                  """
+                  |----------------------
+                  |           |
+                  |           O
+                  |           |
+                  |           
+                  |         
+                  |______________________
+                  """,
+                  """
+                  |----------------------
+                  |           |
+                  |           O
+                  |          /|
+                  |           
+                  |         
+                  |______________________
+                  """,
+                  """
+                  |----------------------
+                  |           |
+                  |           O
+                  |          /|\\
+                  |           
+                  |         
+                  |______________________
+                  """,
+                  """
+                  |----------------------
+                  |           |
+                  |           O
+                  |          /|\\
+                  |           |
+                  |         
+                  |______________________
+                  """,
+                  """
+                  |----------------------
+                  |           |
+                  |           O
+                  |          /|\\
+                  |           |
+                  |          / 
+                  |______________________
+                  """,
+                  """
+                  |----------------------
+                  |           |
+                  |           O
+                  |          /|\\
+                  |           |
+                  |          / \\
+                  |______________________
+                  """]
+        
+        
+        
+Congrats_display = """
+                    ********************************
+                    ********CONGRATULATIONS*********
+                    ********************************
+                    """
+
+#guess='a'
+w_or_l_condition = ['w','l']
+def guess_game():
+    word = rd.choice(word_list)
+    play = 'y'
+    hidden_word = "*" * len(word)
+
+    print(hidden_word)
+    word_letters = [r for r in word]
+    wrong=0
+    word_guess_list = []
+    guess_list = []
+    hidden_word_list = []
+    while wrong<letter_guess_limit:
+        hidden_word_list=[]
+        w_or_l = input("Guess a word(w) or letter(l) :").casefold()
+        if w_or_l not in w_or_l_condition:
+            print("Invalid selection. Try again.")
+        elif w_or_l == "w":
+        
+            if len(word_guess_list) <= word_guess_limit-1:
+                guess = input("Your guess:").casefold()
+                if guess == word:
+                    print(Congrats_display)
+                    print("You guessed the word :", guess)
+                    break
+                else:
+                    print("Wrong guess.")
+                    word_guess_list += [guess]
+            else:
+                print("you've reached word guess limit. Try guessing the letter.")
+        else:
+            guess = input("Your guess:").casefold()
+            guess_list += [guess]
+            if guess in word_letters:
+                for r in word_letters:
+                    if r in guess_list:
+                        hidden_word_list += [r]
+                    else:
+                        hidden_word_list +=['*']
+                str1= ""
+                if '*' in hidden_word_list:
+                    print(str1.join(hidden_word_list))
+                else:
+                    print(Congrats_display)
+                    print("You guessed the word. ->", str1.join(hidden_word_list))
+                    break
+                    
+            else:
+                wrong +=1
+                if wrong == letter_guess_limit:
+                    print(hangman_display[wrong-1])
+                    print("Sorry your Hangman died. The word was : ", word)
+                    break
+                else:
+                    print(hangman_display[wrong-1])
+    play = input("Do you want to play again? \\o/ (y/n) :").casefold()
+    while play not in ['y','n']:
+    #play = input("Do you want to play again? \\o/ (y/n) :").casefold()
+        print("Inavalid selection. Please select from the given options (y/n)")
+        play = input("Do you want to play again? \\o/ (y/n) :").casefold()
+    return play
+          
+
+
+while play == 'y':
+    play = guess_game()
+if play =='n':
+    print("Thank you for visiting the game. Have a good day.") 
