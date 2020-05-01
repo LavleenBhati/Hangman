@@ -1,12 +1,91 @@
+
 import random as rd
 
-with open(r"hangman.txt",'r') as f:
-    word_list_temp = f.readlines()
-f.close()
-word_list_temp[0]
-word_list = [r[:-1] for r in word_list_temp]
+
+print(""" 
+       Welcome to Hangman, a game where you have to guess the name of the movie
+       before your man is hanged.
+       The movies to guess are some of the Bollywood movies since 2000. 
+       Initially only Vowels will be provided as a hint for the movie name.
+       You have to guess the alphabets in the name untill you uncover the name 
+       of the movie.
+       If you think you know the name of the movie, you have 3 trials to guess 
+       the name as well. However, after the 3 trials you will not be able to 
+       guess the entire anme anymore and will have to rely on guessing with 
+       letters.
+       
+       Good Luck and enjoy
+       
+       """)
+
+#with open(r"C:\Users\lavle\Desktop\Python Game\hangman.txt",'r') as f:
+ #   word_list_temp = f.readlines()
+#f.close()
+#word_list_temp[0]
+#word_list = [r[:-1] for r in word_list_temp]
+
+#=====================film list========================
+
+import requests
+import urllib.request
+import time
+from bs4 import BeautifulSoup
+import numpy as np
+import pandas as pd
+from urllib.request import urlopen
+import re
+
+url = 'https://en.wikipedia.org/wiki/Lists_of_Bollywood_films'
+html = urlopen(url) 
+soup = BeautifulSoup(html, 'html.parser')
 
 
+movies = {}
+
+for link in soup.find_all("a"):
+    url = link.get("href", "")
+    if "/wiki/List_of_Bollywood_films" in url:
+        movies[link.text.strip()] = url
+
+key_to_remove = list(range(1920,2021))
+key_to_remove_2 = [str(r) for r in key_to_remove]
+movies_2 = movies.copy()
+for key in key_to_remove_2:
+    del movies_2[key]
+
+
+#print(movies_2)
+links_url = list(movies_2.values())
+links_url = [t for t in links_url if int(t[-4:])>1999 and int(t[-4:])<2021]
+links_url_2 = ["https://en.wikipedia.org/"+ r for r in links_url]
+
+names = []
+#url_1 = links_url_2[7]
+for url_1 in links_url_2:
+    html = urlopen(url_1) 
+    soup_1 = BeautifulSoup(html, 'html.parser')
+    table = soup_1.find('table',{'class':'wikitable sortable'})
+    #print(table)
+    if(table == None):
+        #print("no wikitable sortable for ",url_1)
+        continue
+    else:
+        linkss = table.findAll('i')
+    #print(linkss)
+    #print(linkss[7].find('a'))
+    #print(linkss[4].find('i')).get('title'))
+    
+        for link in linkss:
+        #link_temp = link.find('a')
+            if(link.find('a') == None):
+                continue
+            else:
+                names.append(link.find('a').get('title'))
+
+names_2 = [y.split('(')[0].rstrip(')') for y in names]
+names_3 = [re.sub('\W+',' ', z) for z in names_2]
+
+#===================film list end====================
 
 word_guess_limit = 3
 letter_guess_limit = 7
@@ -89,16 +168,27 @@ Congrats_display = """
 #guess='a'
 w_or_l_condition = ['w','l']
 def guess_game():
-    word = rd.choice(word_list)
+    word = rd.choice(names_3).casefold()
     play = 'y'
-    hidden_word = "*" * len(word)
-
-    print(hidden_word)
+    
+    hidden_word_list = []
+    
     word_letters = [r for r in word]
+    guess_list = ['a','e','i','o','u',' ']
+    vowel_list = ['a','e','i','o','u']
+    for t in word_letters:
+        if t in guess_list:
+            hidden_word_list += [t]
+        else:
+            hidden_word_list +=['*']
+    #hidden_word = "*" * len(word)
+    str1= ""
+    print(str1.join(hidden_word_list))
+    
     wrong=0
     word_guess_list = []
-    guess_list = []
-    hidden_word_list = []
+    word_last = str1.join(hidden_word_list)
+    
     while wrong<letter_guess_limit:
         hidden_word_list=[]
         w_or_l = input("Guess a word(w) or letter(l) :").casefold()
@@ -126,14 +216,16 @@ def guess_game():
                         hidden_word_list += [r]
                     else:
                         hidden_word_list +=['*']
-                str1= ""
+                word_last = str1.join(hidden_word_list)
                 if '*' in hidden_word_list:
-                    print(str1.join(hidden_word_list))
+                    print(word_last)
                 else:
                     print(Congrats_display)
-                    print("You guessed the word. ->", str1.join(hidden_word_list))
+                    print("You guessed the word. ->", word_last)
                     break
                     
+            elif guess in vowel_list:
+                continue
             else:
                 wrong +=1
                 if wrong == letter_guess_limit:
@@ -142,10 +234,18 @@ def guess_game():
                     break
                 else:
                     print(hangman_display[wrong-1])
+                    
+                    #for r in word_letters:
+                    #    if r in guess_list:
+                    #        hidden_word_list += [r]
+                    #    else:
+                    #        hidden_word_list +=['*']
+                    print(word_last)
+                    
     play = input("Do you want to play again? \\o/ (y/n) :").casefold()
     while play not in ['y','n']:
     #play = input("Do you want to play again? \\o/ (y/n) :").casefold()
-        print("Inavalid selection. Please select from the given options (y/n)")
+        print("Invalid selection. Please select from the given options (y/n)")
         play = input("Do you want to play again? \\o/ (y/n) :").casefold()
     return play
           
